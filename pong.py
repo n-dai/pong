@@ -96,6 +96,8 @@ class GameState:
         ball.ball_velocity = 3
         ball.ball_movement_x = ball.ball_velocity
 
+        ball.rally_count = 0
+
         game_state.p1_score = 0
         game_state.p2_score = 0
 
@@ -126,7 +128,9 @@ class GameState:
             game_state.screen.fill(self.bg_colour)
             game_state.middle_line()
             game_state.game_score_display()
+            game_state.game_over()
             ball.ball_init()
+            ball.special_ability()
             ball.ball_move()
             ball.ball_deflect()
             ball.point_detect()
@@ -135,22 +139,41 @@ class GameState:
             paddle.paddle_create()
             paddle.border_check()
             paddle.paddle_AI()
-            game_state.game_over()
 
 # Class to hold all information regarding the pong ball
 class Ball:
     
+    green = (0, 255, 0)
+    special_colour = (0, 0, 0)
+    ball_colour =(255, 255, 255)
     x_ball_dir = GameState.half_width
     y_ball_dir = GameState.half_height
 
-    ball_velocity = 3
+    ball_velocity = 4
     init_y = random.randint(1, 3)
     ball_movement_x = ball_velocity
     ball_movement_y = init_y
 
+    rally_count = 0
+    special_ability_y = 0
+    special_ability_x = 0
+    special_velocity = 0
+    special_hit = 0
+    special_1_count = 0
+    special_3_count = 0
+    special_3_count_ai = 0
+    abilities = random.randint(1,2)
+
+    ability_text = " "
 
     def ball_init(self):
-        game.draw.circle(game_state.screen, ((paddle.white)), (self.x_ball_dir, self.y_ball_dir), 8)
+        game.draw.circle(game_state.screen, ((ball.ball_colour)), (self.x_ball_dir, self.y_ball_dir), 8)
+
+        if self.special_1_count == 1:
+            ball.ball_colour = (255, 0, 0)
+        
+        if self.special_1_count == 0:
+            ball.ball_colour = (255, 255, 255)
 
     def ball_move(self):
         
@@ -164,10 +187,16 @@ class Ball:
         if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
             if self.y_ball_dir > paddle.y_direction and self.y_ball_dir < paddle.y_direction + 115:
                 self.ball_movement_x = self.ball_velocity
+                self.rally_count += 1
+                self.special_3_count = 0
+                self.special_1_count = 0
             
         elif self.x_ball_dir > paddle.x_direction_op and self.x_ball_dir < paddle.x_direction_op + 20:
             if self.y_ball_dir > paddle.y_direction_op and self.y_ball_dir < paddle.y_direction_op + 115:
                 self.ball_movement_x = -self.ball_velocity
+                self.rally_count += 1
+                self.special_3_count_ai = 0
+                self.special_1_count = 0
     
     def ball_deflect(self):
 
@@ -182,27 +211,93 @@ class Ball:
         if self.x_ball_dir > game_state.screen_width + 10:
             self.x_ball_dir = game_state.half_width
             game_state.p1_score += 1
+            self.rally_count = 0
+            self.special_hit = 0
+            self.ball_movement_x = 4
+            self.special_3_count_ai = 0
+            self.special_1_count = 0
             game.time.delay(1000)
         
         if self.x_ball_dir < -10:
             self.x_ball_dir = game_state.half_width
             game_state.p2_score += 1
+            ball.rally_count = 0
+            self.special_hit = 0
+            self.ball_movement_x = - 4
+            self.special_3_count = 0
+            self.special_1_count = 0
             game.time.delay(1000)
 
     
     def win_detect(self):
 
-        if game_state.p1_score >= 2:
+        if game_state.p1_score >= 10:
             game_state.score_message = "Game Over Player 1 wins"
             return 1
         
-        if game_state.p2_score >= 2:
+        if game_state.p2_score >= 10:
             game_state.score_message = "Game Over Player 2 wins"
-            return 2
+            return 2    
+    
+    def special_ability(self):
 
+        self.special_ability_y += self.special_velocity
+
+        if self.abilities == 1:
+            self.special_colour = (255, 0, 0)
+            self.ability_text ="2x Speed"
+        
+        # if self.abilities == 2:
+        #     self.special_colour = (0, 255, 0)
+        #     self.ability_text = "Not"
+        
+        if self.abilities == 2:
+            self.special_colour = (0, 255, 255)
+            self.ability_text = "Freeze"
+
+        if self.rally_count > 2:
+            game.draw.circle(game_state.screen, (self.special_colour), (game_state.half_width, self.special_ability_y), 30)
+
+            ability_font = game.font.SysFont("calibri", 12)
+            ability_text =  ability_font.render(self.ability_text, True, game_state.white)
+            game_state.screen.blit(ability_text, (game_state.half_width - 15, self.special_ability_y - 5))
+
+            if self.special_ability_y > GameState.screen_height:
+                self.special_velocity = -0.5
+        
+            if self.special_ability_y < 1:
+                self.special_velocity = 0.5
+
+        # To make the special ability circle dissapear  
+        if self.x_ball_dir < game_state.half_width + 30 and self.x_ball_dir > game_state.half_width - 30 and self.special_hit != 1:
+            if self.y_ball_dir < self.special_ability_y + 30 and self.y_ball_dir > self.special_ability_y - 30:
+                self.special_hit += 1
+                self.rally_count = 0
+                self.special_colour = (0, 0, 0)
+                self.special_ability_y = -30
+                self.special_velocity = 0
+
+                if self.abilities == 1 and self.ball_movement_x < 0:
+                    self.ball_movement_x = - 8
+                    self.special_1_count += 1
+                
+                if self.abilities == 1 and self.ball_movement_x > 0:
+                    self.ball_movement_x = 8
+                    self.special_1_count += 1
+                
+                if self.abilities == 2 and self.ball_movement_x < 0:
+                    self.special_3_count += 1
+                    paddle.paddle_colour = (0, 255, 255)
+                
+                if self.abilities == 2 and self.ball_movement_x > 0:
+                    self.special_3_count_ai += 1
+                    paddle.paddle_colour_ai = (0, 255, 255)
+        
 class Paddle:
 
     white = (255, 255, 255)
+    paddle_colour = (255, 255, 255)
+    paddle_colour_ai = (255, 255, 255)
     velocity = 4
 
     x_origin = GameState.screen_width/2 - 550
@@ -220,8 +315,14 @@ class Paddle:
 
     def paddle_create(self):
 
-        game.draw.rect(GameState.screen, (self.white), [self.x_direction, self.y_direction, 20, 115] )
-        game.draw.rect(GameState.screen, (self.white), [self.x_direction_op, self.y_direction_op, 20, 115] )
+        if ball.special_3_count == 0:
+            self.paddle_colour = (255, 255, 255)
+
+        if ball.special_3_count_ai == 0:
+            self.paddle_colour_ai = (255, 255, 255)
+
+        game.draw.rect(GameState.screen, (self.paddle_colour), [self.x_direction, self.y_direction, 20, 115] )
+        game.draw.rect(GameState.screen, (self.paddle_colour_ai), [self.x_direction_op, self.y_direction_op, 20, 115] )
 
         game.display.flip()
     
@@ -229,10 +330,10 @@ class Paddle:
 
         if ball.x_ball_dir > game_state.half_width:
 
-            if ball.y_ball_dir > paddle.y_direction_op:
+            if ball.y_ball_dir > paddle.y_direction_op and ball.special_3_count_ai == 0:
                 self.y_direction_op += self.ai_speed
 
-            if ball.y_ball_dir < paddle.y_direction_op:
+            if ball.y_ball_dir < paddle.y_direction_op and ball.special_3_count_ai == 0:
                 self.y_direction_op -= self.ai_speed
 
 
@@ -242,11 +343,11 @@ class Paddle:
 
         if keys[game.K_w]:
 
-            if game_state.game_over() != 1 and paddle.level_select != 0:
+            if game_state.game_over() != 1 and paddle.level_select != 0 and ball.special_3_count == 0:
                 self.y_direction -= self.velocity
 
         if keys[game.K_s]:
-            if game_state.game_over() != 1 and paddle.level_select != 0:
+            if game_state.game_over() != 1 and paddle.level_select != 0 and ball.special_3_count == 0:
                 self.y_direction += self.velocity
 
         if keys[game.K_o]:
