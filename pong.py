@@ -274,24 +274,30 @@ class Ball:
                 self.special_hit += 1
                 self.rally_count = 0
                 self.special_colour = (0, 0, 0)
-                self.special_ability_y = -30
+                self.special_ability_y = -35
                 self.special_velocity = 0
 
                 if self.abilities == 1 and self.ball_movement_x < 0:
                     self.ball_movement_x = - 8
                     self.special_1_count += 1
+                    self.special_hit = 0
                 
                 if self.abilities == 1 and self.ball_movement_x > 0:
                     self.ball_movement_x = 8
                     self.special_1_count += 1
+                    self.special_hit = 0
                 
                 if self.abilities == 2 and self.ball_movement_x < 0:
                     self.special_3_count += 1
                     paddle.paddle_colour = (0, 255, 255)
+                    self.special_hit = 0
                 
                 if self.abilities == 2 and self.ball_movement_x > 0:
                     self.special_3_count_ai += 1
                     paddle.paddle_colour_ai = (0, 255, 255)
+                    self.special_hit = 0
+                
+                self.abilities = random.randint(1,2)
         
 class Paddle:
 
@@ -383,7 +389,7 @@ class Paddle:
             self.y_direction = 1
         
         if self.y_direction > game_state.screen_height - 115:
-            self.y_direction = game_state.screen_height - 114
+            self.y_direction = game_state.screen_height - 120
 
         if self.y_direction_op < 0:
             self.y_direction_op = 1
