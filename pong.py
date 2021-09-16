@@ -97,6 +97,7 @@ class GameState:
         ball.ball_movement_x = ball.ball_velocity
 
         ball.rally_count = 0
+        ball.special_ability_y = 0
 
         game_state.p1_score = 0
         game_state.p2_score = 0
@@ -185,25 +186,59 @@ class Ball:
             self.y_ball_dir += self.ball_movement_y
 
         if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
-            if self.y_ball_dir > paddle.y_direction and self.y_ball_dir < paddle.y_direction + 115:
-                self.ball_movement_x = self.ball_velocity
+            if self.y_ball_dir > paddle.y_direction and self.y_ball_dir < paddle.y_direction + 38:
+                self.ball_movement_x = 0.9 * self.ball_velocity
+                #self.ball_movement_y = 1.2 * self.init_y
+                self.rally_count += 1
+                self.special_3_count = 0
+                self.special_1_count = 0
+        
+        if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
+            if self.y_ball_dir > paddle.y_direction + 39 and self.y_ball_dir < paddle.y_direction + 77:
+                self.ball_movement_x = 1.25 * self.ball_velocity
+                self.rally_count += 1
+                self.special_3_count = 0
+                self.special_1_count = 0
+
+        if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
+            if self.y_ball_dir > paddle.y_direction + 78 and self.y_ball_dir < paddle.y_direction + 115:
+                self.ball_movement_x = 0.9 * self.ball_velocity
+                #self.ball_movement_y = 1.2 * self.init_y
                 self.rally_count += 1
                 self.special_3_count = 0
                 self.special_1_count = 0
             
-        elif self.x_ball_dir > paddle.x_direction_op and self.x_ball_dir < paddle.x_direction_op + 20:
-            if self.y_ball_dir > paddle.y_direction_op and self.y_ball_dir < paddle.y_direction_op + 115:
-                self.ball_movement_x = -self.ball_velocity
+        if self.x_ball_dir > paddle.x_direction_op and self.x_ball_dir < paddle.x_direction_op + 20:
+            if self.y_ball_dir > paddle.y_direction_op + 39 and self.y_ball_dir < paddle.y_direction_op + 77:
+                self.ball_movement_x = - ( 1.25 * self.ball_velocity)
+                self.rally_count += 1
+                self.special_3_count_ai = 0
+                self.special_1_count = 0
+
+        if self.x_ball_dir < paddle.x_direction_op + 20 and self.x_ball_dir > paddle.x_direction_op:
+            if self.y_ball_dir > paddle.y_direction_op + 78 and self.y_ball_dir < paddle.y_direction_op + 115:
+                self.ball_movement_x = - (0.9 * self.ball_velocity)
+                #self.ball_movement_y = 1.2 * self.init_y
                 self.rally_count += 1
                 self.special_3_count_ai = 0
                 self.special_1_count = 0
     
+        if self.x_ball_dir < paddle.x_direction_op + 20 and self.x_ball_dir > paddle.x_direction_op:
+            if self.y_ball_dir > paddle.y_direction_op and self.y_ball_dir < paddle.y_direction_op + 38:
+                self.ball_movement_x = - (0.9 * self.ball_velocity)
+                #self.ball_movement_y = 1.2 * self.init_y
+                self.rally_count += 1
+                self.special_3_count_ai = 0
+                self.special_1_count = 0
+        
+
+    
     def ball_deflect(self):
 
         if self.y_ball_dir > game_state.screen_height:
-            self.ball_movement_y = - random.randint(1,3)
+            self.ball_movement_y = -1 * random.randint(1, 3)
         if self.y_ball_dir < 0:
-            self.ball_movement_y = random.randint(1,3)
+            self.ball_movement_y = random.randint(1, 3)
 
 
     def point_detect(self):
@@ -216,6 +251,7 @@ class Ball:
             self.ball_movement_x = 4
             self.special_3_count_ai = 0
             self.special_1_count = 0
+            self.special_ability_y = 0
             game.time.delay(1000)
         
         if self.x_ball_dir < -10:
@@ -226,6 +262,7 @@ class Ball:
             self.ball_movement_x = - 4
             self.special_3_count = 0
             self.special_1_count = 0
+            self.special_ability_y = 0
             game.time.delay(1000)
 
     
