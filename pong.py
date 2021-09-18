@@ -70,13 +70,13 @@ class GameState:
             self.screen.blit(game_over_text, (self.half_width - 200, 10))
 
         if paddle.level_select == 0:
-            self.welcome_message = "Welcome to Pong, please select your difficulty: [1] - [2] - [3]"
+            self.welcome_message = "Welcome to Pong, please select your difficulty: [1] - [2] - [3] or [4] for multiplayer"
         else:
             self.welcome_message = " "
             
         welcome_font = game.font.SysFont("calibri", 32)
         welcome_text =  welcome_font.render(self.welcome_message, True, self.white)
-        self.screen.blit(welcome_text, (300, 10))
+        self.screen.blit(welcome_text, (200, 10))
 
 
     # Function to reset the game's values back to the init state
@@ -146,6 +146,7 @@ class GameState:
 class Ball:
     
     green = (0, 255, 0)
+    black = (0, 0, 0)
     special_colour = (0, 0, 0)
     ball_colour =(255, 255, 255)
     x_ball_dir = GameState.half_width
@@ -340,7 +341,7 @@ class Ball:
         self.special_ability_y += self.special_velocity
 
         if self.abilities == 1:
-            self.special_colour = (255, 0, 0)
+            self.special_colour = (250, 0, 0)
             self.ability_text ="2x Speed"
         
         # if self.abilities == 2:
@@ -355,17 +356,19 @@ class Ball:
             game.draw.circle(game_state.screen, (self.special_colour), (game_state.half_width, self.special_ability_y), 30)
 
             ability_font = game.font.SysFont("calibri", 12)
-            ability_text =  ability_font.render(self.ability_text, True, game_state.white)
+            ability_text =  ability_font.render(self.ability_text, True, self.black)
             game_state.screen.blit(ability_text, (game_state.half_width - 15, self.special_ability_y - 5))
 
+            self.special_hit = 1
+
             if self.special_ability_y > GameState.screen_height:
-                self.special_velocity = -0.5
+                self.special_velocity = -1
         
             if self.special_ability_y < 1:
-                self.special_velocity = 0.5
+                self.special_velocity = 1
 
         # Conditions to make the special ability circle dissapear  
-        if self.x_ball_dir < game_state.half_width + 30 and self.x_ball_dir > game_state.half_width - 30 and self.special_hit != 1:
+        if self.x_ball_dir < game_state.half_width + 30 and self.x_ball_dir > game_state.half_width - 30 and self.special_hit == 1:
             if self.y_ball_dir < self.special_ability_y + 30 and self.y_ball_dir > self.special_ability_y - 30:
                 self.special_hit += 1
                 self.rally_count = 0
@@ -402,10 +405,10 @@ class Paddle:
     paddle_colour_ai = (255, 255, 255)
     velocity = 4
 
-    x_origin = GameState.screen_width/2 - 570
+    x_origin = GameState.screen_width/2 - 590
     y_origin = GameState.screen_height/2 - 100
 
-    x_direction_op = 1270
+    x_direction_op = 1290
     y_direction_op = y_origin
 
     x_direction = x_origin
@@ -455,10 +458,10 @@ class Paddle:
             if game_state.game_over() != 1 and paddle.level_select != 0 and ball.special_3_count == 0:
                 self.y_direction += self.velocity
 
-        if keys[game.K_o]:
+        if keys[game.K_UP]:
             self.y_direction_op -= self.velocity
 
-        if keys[game.K_l]:
+        if keys[game.K_DOWN]:
             self.y_direction_op += self.velocity
         
         #----- Level selector --------#
@@ -475,6 +478,11 @@ class Paddle:
         if keys[game.K_3]:
             if self.level_select == 0:
                 self.ai_speed = 5
+                self.level_select += 1
+        
+        if keys[game.K_4]:
+            if self.level_select == 0:
+                self.ai_speed = 0
                 self.level_select += 1
         
         if keys[game.K_r]:
