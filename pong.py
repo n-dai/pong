@@ -52,13 +52,13 @@ class GameState:
     # Function to display the game score
     def game_score_display(self):
 
-        p1_score_font = game.font.SysFont("calibri", 64)
+        p1_score_font = game.font.SysFont("calibri", 70)
         p1_score_text = p1_score_font.render(str(self.p1_score), True, self.white)
-        self.screen.blit(p1_score_text, (self.screen_width / 4 , self.screen_height / 2))
+        self.screen.blit(p1_score_text, (self.half_width - 100 , (self.screen_height / 2) - 300))
 
-        p2_score_font = game.font.SysFont("calibri", 64)
+        p2_score_font = game.font.SysFont("calibri", 70)
         p2_score_text = p2_score_font.render(str(self.p2_score), True, self.white)
-        self.screen.blit(p2_score_text, (3/4 * self.screen_width, self.screen_height / 2))
+        self.screen.blit(p2_score_text, (self.half_width + 68, (self.screen_height / 2) - 300))
 
         score_font = game.font.SysFont("calibri", 32)
         score_text = score_font.render(game_state.score_message, True, self.white)
@@ -95,6 +95,7 @@ class GameState:
 
         ball.ball_velocity = 3
         ball.ball_movement_x = ball.ball_velocity
+        ball.init_y = 2.5
 
         ball.rally_count = 0
         ball.special_ability_y = 0
@@ -131,10 +132,10 @@ class GameState:
             game_state.game_score_display()
             game_state.game_over()
             ball.ball_init()
+            ball.point_detect()
             ball.special_ability()
             ball.ball_move()
-            ball.ball_deflect()
-            ball.point_detect()
+            ball.ball_deflect_y_direction()
             ball.win_detect()
             paddle.move()
             paddle.paddle_create()
@@ -151,7 +152,7 @@ class Ball:
     y_ball_dir = GameState.half_height
 
     ball_velocity = 4
-    init_y = random.randint(1, 3)
+    init_y = 2.5
     ball_movement_x = ball_velocity
     ball_movement_y = init_y
 
@@ -185,66 +186,115 @@ class Ball:
             self.x_ball_dir += self.ball_movement_x
             self.y_ball_dir += self.ball_movement_y
 
-        if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
+        # If the ball hits the middle of the paddle, the x velocity is increased by 25%, if the ball hits the ends of the paddle
+        # the y velocity is increased by 50% and the x velocity is decreased by 10%
+
+    #---------------------------- Ball movement for player paddle -----------------------------------#
+        if self.x_ball_dir - 8 < paddle.x_direction + 20 and self.x_ball_dir - 8 > paddle.x_direction + 10:
             if self.y_ball_dir > paddle.y_direction and self.y_ball_dir < paddle.y_direction + 38:
                 self.ball_movement_x = 0.9 * self.ball_velocity
-                #self.ball_movement_y = 1.2 * self.init_y
+
+                if self.ball_movement_y > 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = 1.1 * self.init_y
+                elif self.ball_movement_y < 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = - (1.1 * self.init_y)
+
                 self.rally_count += 1
                 self.special_3_count = 0
                 self.special_1_count = 0
         
-        if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
+        if self.x_ball_dir - 8 < paddle.x_direction + 20 and self.x_ball_dir - 8 > paddle.x_direction + 10:
             if self.y_ball_dir > paddle.y_direction + 39 and self.y_ball_dir < paddle.y_direction + 77:
-                self.ball_movement_x = 1.25 * self.ball_velocity
+                self.ball_movement_x = 1.2 * self.ball_velocity
+
+                if self.ball_movement_y > 0:
+                    self.init_y = 0.9 * self.init_y
+                    self.ball_movement_y = 0.9 * self.init_y
+                elif self.ball_movement_y < 0:
+                    self.init_y = 0.9 * self.init_y
+                    self.ball_movement_y = - (0.9 * self.init_y)
+
                 self.rally_count += 1
                 self.special_3_count = 0
                 self.special_1_count = 0
 
-        if self.x_ball_dir < paddle.x_direction + 20 and self.x_ball_dir > paddle.x_direction:
+        if self.x_ball_dir - 8 < paddle.x_direction + 20 and self.x_ball_dir - 8 > paddle.x_direction + 10:
             if self.y_ball_dir > paddle.y_direction + 78 and self.y_ball_dir < paddle.y_direction + 115:
                 self.ball_movement_x = 0.9 * self.ball_velocity
-                #self.ball_movement_y = 1.2 * self.init_y
+                
+                if self.ball_movement_y > 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = 1.1 * self.init_y
+                elif self.ball_movement_y < 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = - (1.1 * self.init_y)
+                
                 self.rally_count += 1
                 self.special_3_count = 0
                 self.special_1_count = 0
-            
-        if self.x_ball_dir > paddle.x_direction_op and self.x_ball_dir < paddle.x_direction_op + 20:
+        
+        #---------------------------- Ball movement for computer paddle -----------------------------------#
+        if self.x_ball_dir + 8 > paddle.x_direction_op and self.x_ball_dir + 8 < paddle.x_direction_op + 10:
             if self.y_ball_dir > paddle.y_direction_op + 39 and self.y_ball_dir < paddle.y_direction_op + 77:
-                self.ball_movement_x = - ( 1.25 * self.ball_velocity)
+                self.ball_movement_x = - ( 1.2 * self.ball_velocity)
+
+                if self.ball_movement_y > 0:
+                    self.init_y = 0.9 * self.init_y
+                    self.ball_movement_y = 0.9 * self.init_y
+                elif self.ball_movement_y < 0:
+                    self.init_y = 0.9 * self.init_y
+                    self.ball_movement_y = - (0.9 * self.init_y)
+
                 self.rally_count += 1
                 self.special_3_count_ai = 0
                 self.special_1_count = 0
 
-        if self.x_ball_dir < paddle.x_direction_op + 20 and self.x_ball_dir > paddle.x_direction_op:
+        if self.x_ball_dir + 8 > paddle.x_direction_op and self.x_ball_dir + 8 < paddle.x_direction_op + 10: 
             if self.y_ball_dir > paddle.y_direction_op + 78 and self.y_ball_dir < paddle.y_direction_op + 115:
                 self.ball_movement_x = - (0.9 * self.ball_velocity)
-                #self.ball_movement_y = 1.2 * self.init_y
+                
+                if self.ball_movement_y > 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = 1.1 * self.init_y
+                elif self.ball_movement_y < 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = - (1.1 * self.init_y)
+                
                 self.rally_count += 1
                 self.special_3_count_ai = 0
                 self.special_1_count = 0
     
-        if self.x_ball_dir < paddle.x_direction_op + 20 and self.x_ball_dir > paddle.x_direction_op:
+        if self.x_ball_dir + 8 > paddle.x_direction_op and self.x_ball_dir + 8 < paddle.x_direction_op + 10: 
             if self.y_ball_dir > paddle.y_direction_op and self.y_ball_dir < paddle.y_direction_op + 38:
                 self.ball_movement_x = - (0.9 * self.ball_velocity)
-                #self.ball_movement_y = 1.2 * self.init_y
+                
+                if self.ball_movement_y > 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = 1.1 * self.init_y
+                elif self.ball_movement_y < 0:
+                    self.init_y = 1.1 * self.init_y
+                    self.ball_movement_y = - (1.1 * self.init_y)
+
                 self.rally_count += 1
                 self.special_3_count_ai = 0
                 self.special_1_count = 0
-        
-
     
-    def ball_deflect(self):
+    # Function to handle the ball deflection on the y axis
+    def ball_deflect_y_direction(self):
 
         if self.y_ball_dir > game_state.screen_height:
-            self.ball_movement_y = -1 * random.randint(1, 3)
+            self.ball_movement_y = -1 * self.init_y
         if self.y_ball_dir < 0:
-            self.ball_movement_y = random.randint(1, 3)
+            self.ball_movement_y = self.init_y
 
-
+    # Function to handle the game state when a point is scored by either opponent 
     def point_detect(self):
 
         if self.x_ball_dir > game_state.screen_width + 10:
             self.x_ball_dir = game_state.half_width
+            self.y_ball_dir = game_state.half_height
             game_state.p1_score += 1
             self.rally_count = 0
             self.special_hit = 0
@@ -252,10 +302,14 @@ class Ball:
             self.special_3_count_ai = 0
             self.special_1_count = 0
             self.special_ability_y = 0
+            self.init_y = random.randint(1,3)
+            self.ball_movement_y = self.init_y
+            self.ball_velocity = 4
             game.time.delay(1000)
         
         if self.x_ball_dir < -10:
             self.x_ball_dir = game_state.half_width
+            self.y_ball_dir = game_state.half_height
             game_state.p2_score += 1
             ball.rally_count = 0
             self.special_hit = 0
@@ -263,19 +317,24 @@ class Ball:
             self.special_3_count = 0
             self.special_1_count = 0
             self.special_ability_y = 0
+            self.init_y = random.randint(1,3)
+            self.ball_movement_y = self.init_y
+            self.ball_velocity = 4
             game.time.delay(1000)
 
     
+    # Function to detect a win, if any side scores 7 points they win
     def win_detect(self):
 
-        if game_state.p1_score >= 10:
+        if game_state.p1_score >= 7:
             game_state.score_message = "Game Over Player 1 wins"
             return 1
         
-        if game_state.p2_score >= 10:
+        if game_state.p2_score >= 7:
             game_state.score_message = "Game Over Player 2 wins"
             return 2    
     
+    # Function to handle the special abilities of the game
     def special_ability(self):
 
         self.special_ability_y += self.special_velocity
@@ -292,7 +351,7 @@ class Ball:
             self.special_colour = (0, 255, 255)
             self.ability_text = "Freeze"
 
-        if self.rally_count > 2:
+        if self.rally_count > 7:
             game.draw.circle(game_state.screen, (self.special_colour), (game_state.half_width, self.special_ability_y), 30)
 
             ability_font = game.font.SysFont("calibri", 12)
@@ -305,7 +364,7 @@ class Ball:
             if self.special_ability_y < 1:
                 self.special_velocity = 0.5
 
-        # To make the special ability circle dissapear  
+        # Conditions to make the special ability circle dissapear  
         if self.x_ball_dir < game_state.half_width + 30 and self.x_ball_dir > game_state.half_width - 30 and self.special_hit != 1:
             if self.y_ball_dir < self.special_ability_y + 30 and self.y_ball_dir > self.special_ability_y - 30:
                 self.special_hit += 1
@@ -343,10 +402,10 @@ class Paddle:
     paddle_colour_ai = (255, 255, 255)
     velocity = 4
 
-    x_origin = GameState.screen_width/2 - 550
+    x_origin = GameState.screen_width/2 - 570
     y_origin = GameState.screen_height/2 - 100
 
-    x_direction_op = 1250
+    x_direction_op = 1270
     y_direction_op = y_origin
 
     x_direction = x_origin
@@ -356,6 +415,7 @@ class Paddle:
 
     level_select = 0
 
+    # Function to draw the paddles
     def paddle_create(self):
 
         if ball.special_3_count == 0:
@@ -369,21 +429,23 @@ class Paddle:
 
         game.display.flip()
     
+    # Simple AI that tracks the position of the ball's y position
     def paddle_AI(self):
 
         if ball.x_ball_dir > game_state.half_width:
 
-            if ball.y_ball_dir > paddle.y_direction_op and ball.special_3_count_ai == 0:
+            if ball.y_ball_dir > paddle.y_direction_op + 50 and ball.special_3_count_ai == 0:
                 self.y_direction_op += self.ai_speed
 
             if ball.y_ball_dir < paddle.y_direction_op and ball.special_3_count_ai == 0:
                 self.y_direction_op -= self.ai_speed
 
 
+    # Function to handle keybinds of the game
     def move(self):
         
         keys = game.key.get_pressed()
-
+    #----- Movement --------#
         if keys[game.K_w]:
 
             if game_state.game_over() != 1 and paddle.level_select != 0 and ball.special_3_count == 0:
@@ -399,6 +461,7 @@ class Paddle:
         if keys[game.K_l]:
             self.y_direction_op += self.velocity
         
+        #----- Level selector --------#
         if keys[game.K_1]:
             if self.level_select == 0:
                 self.ai_speed = 3.2
