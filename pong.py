@@ -293,6 +293,8 @@ class Ball:
     # Function to handle the game state when a point is scored by either opponent 
     def point_detect(self):
 
+        # If a point is scored by either side, the game state will re-position the ball to the 
+        # centre of the screen and re - initialise the ability iterator and ball movement velocities
         if self.x_ball_dir > game_state.screen_width + 10:
             self.x_ball_dir = game_state.half_width
             self.y_ball_dir = game_state.half_height
@@ -371,7 +373,7 @@ class Ball:
         if self.x_ball_dir < game_state.half_width + 30 and self.x_ball_dir > game_state.half_width - 30 and self.special_hit == 1:
             if self.y_ball_dir < self.special_ability_y + 30 and self.y_ball_dir > self.special_ability_y - 30:
                 self.special_hit += 1
-                self.rally_count = 0
+                #self.rally_count = 0
                 self.special_colour = (0, 0, 0)
                 self.special_ability_y = -35
                 self.special_velocity = 0
@@ -379,31 +381,32 @@ class Ball:
                 if self.abilities == 1 and self.ball_movement_x < 0:
                     self.ball_movement_x = - 8
                     self.special_1_count += 1
-                    self.special_hit = 0
+                    #self.special_hit = 0
                 
                 if self.abilities == 1 and self.ball_movement_x > 0:
                     self.ball_movement_x = 8
                     self.special_1_count += 1
-                    self.special_hit = 0
+                    #self.special_hit = 0
                 
                 if self.abilities == 2 and self.ball_movement_x < 0:
                     self.special_3_count += 1
                     paddle.paddle_colour = (0, 255, 255)
-                    self.special_hit = 0
+                    #self.special_hit = 0
                 
                 if self.abilities == 2 and self.ball_movement_x > 0:
                     self.special_3_count_ai += 1
                     paddle.paddle_colour_ai = (0, 255, 255)
-                    self.special_hit = 0
+                    #self.special_hit = 0
                 
                 self.abilities = random.randint(1,2)
-        
+
+# Class to handle the paddle state of the game 
 class Paddle:
 
     white = (255, 255, 255)
     paddle_colour = (255, 255, 255)
     paddle_colour_ai = (255, 255, 255)
-    velocity = 4
+    velocity = 3
 
     x_origin = GameState.screen_width/2 - 590
     y_origin = GameState.screen_height/2 - 100
@@ -456,7 +459,7 @@ class Paddle:
 
         if keys[game.K_s]:
             if game_state.game_over() != 1 and paddle.level_select != 0 and ball.special_3_count == 0:
-                self.y_direction += self.velocity
+                self.y_direction += self.velocity   
 
         if keys[game.K_UP]:
             self.y_direction_op -= self.velocity
@@ -465,6 +468,8 @@ class Paddle:
             self.y_direction_op += self.velocity
         
         #----- Level selector --------#
+
+        # The AI level is selected by pressing 1 - 3, pressing 4 will activate multiplayer mode
         if keys[game.K_1]:
             if self.level_select == 0:
                 self.ai_speed = 3.2
@@ -485,12 +490,14 @@ class Paddle:
                 self.ai_speed = 0
                 self.level_select += 1
         
+        #----- Restart and quit --------#
         if keys[game.K_r]:
             game_state.game_reset()
 
         if keys[game.K_q]:
             game.quit()
     
+    # Function to ensure the paddles do not move off the screen
     def border_check(self):
 
         if self.y_direction < 0:
